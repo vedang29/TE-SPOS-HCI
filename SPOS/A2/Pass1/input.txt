@@ -1,0 +1,6 @@
+MACRO
+ADDM &A,&B
+LOAD &A
+ADD &B
+STORE &A
+MEND

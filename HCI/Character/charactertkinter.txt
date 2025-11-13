@@ -1,0 +1,93 @@
+import tkinter as tk
+from tkinter import filedialog
+from PIL import Image, ImageTk
+import os
+import re
+
+class CharacterApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Character Recognizer (Filename-Based)")
+        self.root.geometry("550x600")
+        self.root.config(bg="#E6E6FA")
+
+        
+        tk.Button(
+            root,
+            text="Load Character Image",
+            command=self.load_image,
+            bg="#ADD8E6",
+            font=("Arial", 12),
+            width=25
+        ).pack(pady=15)
+
+       
+        self.canvas = tk.Canvas(
+            root,
+            width=480,
+            height=450,
+            bg="white",
+            highlightthickness=2,
+            highlightbackground="black"
+        )
+        self.canvas.pack(pady=10)
+
+
+        self.result_label = tk.Label(
+            root,
+            text="No Character Detected",
+            font=("Arial", 16, "bold"),
+            bg="#E6E6FA"
+        )
+        self.result_label.pack(pady=10)
+
+    def load_image(self):
+        file_path = filedialog.askopenfilename(
+            title="Select Character Image",
+            filetypes=[("Image Files", "*.jpg *.png *.jpeg *.webp")]
+        )
+        if not file_path:
+            return
+
+        
+        img = Image.open(file_path)
+        img_ratio = img.width / img.height
+        frame_ratio = 480 / 450
+
+        if img_ratio > frame_ratio:
+            new_width = 480
+            new_height = int(480 / img_ratio)
+        else:
+            new_height = 450
+            new_width = int(450 * img_ratio)
+
+        img = img.resize((new_width, new_height))
+        self.photo = ImageTk.PhotoImage(img)
+        self.canvas.delete("all")
+        self.canvas.create_image(240 - new_width // 2, 225 - new_height // 2, anchor=tk.NW, image=self.photo)
+
+        
+        filename = os.path.basename(file_path).lower()
+        name_only = os.path.splitext(filename)[0] 
+        characters = "abcdefghijklmnopqrstuvwxyz0123456789"
+        detected = "unknown"
+
+     
+        if name_only in characters:
+            detected = name_only
+        else:
+           
+            match = re.search(r'\b([a-z0-9])\b', name_only)
+            if match:
+                detected = match.group(1)
+            else:
+               
+                if name_only[0] in characters:
+                    detected = name_only[0]
+
+        self.result_label.config(text=f"Detected Character: {detected}", fg="blue")
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = CharacterApp(root)
+    root.mainloop()

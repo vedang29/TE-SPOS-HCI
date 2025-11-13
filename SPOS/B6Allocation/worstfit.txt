@@ -1,0 +1,66 @@
+#include <iostream>
+#include <iomanip>
+using namespace std;
+
+int main()
+{
+    int m, n;
+
+    cout << "Enter number of memory blocks: ";
+    cin >> m;
+    int blockSize[20];
+    cout << "Enter sizes of " << m << " blocks:\n";
+    for (int i = 0; i < m; i++)
+        cin >> blockSize[i];
+
+    cout << "\nEnter number of processes: ";
+    cin >> n;
+    int processSize[20];
+    cout << "Enter sizes of " << n << " processes:\n";
+    for (int i = 0; i < n; i++)
+        cin >> processSize[i];
+
+    int allocation[20];
+    for (int i = 0; i < n; i++)
+        allocation[i] = -1;
+
+    for (int i = 0; i < n; i++)
+    {
+        int worstIdx = -1;
+
+        for (int j = 0; j < m; j++)
+        {
+            if (blockSize[j] >= processSize[i])
+            {
+                if (worstIdx == -1 || blockSize[j] > blockSize[worstIdx])
+                    worstIdx = j;
+            }
+        }
+
+        if (worstIdx != -1)
+        {
+            allocation[i] = worstIdx;
+            blockSize[worstIdx] -= processSize[i];
+        }
+    }
+
+    cout << "\n      WORST FIT MEMORY ALLOCATION      \n";
+    cout << left << setw(12) << "Process No"
+         << setw(15) << "Process Size"
+         << setw(10) << "Block No" << endl;
+    cout << "\n";
+
+    for (int i = 0; i < n; i++)
+    {
+        cout << left << setw(12) << i + 1
+             << setw(15) << processSize[i];
+
+        if (allocation[i] != -1)
+            cout << allocation[i] + 1;
+        else
+            cout << "Not Allocated";
+        cout << endl;
+    }
+
+    return 0;
+}

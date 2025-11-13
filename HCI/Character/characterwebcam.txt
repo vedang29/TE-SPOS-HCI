@@ -1,0 +1,49 @@
+import cv2
+
+cap = cv2.VideoCapture(0)
+cap.set(3, 640)
+cap.set(4, 480)
+
+if not cap.isOpened():
+    print("Cannot open camera")
+    exit()
+
+character = "No Character Detected"
+color = (0, 0, 255)  
+
+print("Instructions: Press any letter (A-Z) or digit (0-9) to display it. Press ESC to exit.")
+
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
+
+    frame = cv2.flip(frame, 1)
+    overlay = frame.copy()
+
+    
+    h, w, _ = frame.shape
+    top_left = (w//3, h//3)
+    bottom_right = (2*w//3, 2*h//3)
+    cv2.rectangle(overlay, top_left, bottom_right, (144, 238, 144), 2)
+    alpha = 0.5
+    cv2.addWeighted(overlay, alpha, frame, 1-alpha, 0, frame)
+
+    
+    cv2.putText(frame, character, (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
+
+    cv2.imshow("Character Recognizer (Typing Mode)", frame)
+
+    key = cv2.waitKey(1) & 0xFF
+    if key == 27:  
+        break
+    elif 48 <= key <= 57 or 65 <= key <= 90 or 97 <= key <= 122:
+        
+        character = chr(key).upper()
+        color = (0, 0, 255)  
+    elif key == ord('0'):
+        character = "No Character Detected"
+        color = (0, 0, 255)
+
+cap.release()
+cv2.destroyAllWindows()

@@ -1,0 +1,68 @@
+import cv2
+import numpy as np
+
+
+cap = cv2.VideoCapture(0)
+cap.set(3, 640)
+cap.set(4, 480)
+
+if not cap.isOpened():
+    print("Cannot open camera")
+    exit()
+
+gesture = "No Gesture Detected"
+color = (0,0,255)  
+
+
+gesture_dict = {
+    '1': ("Thumbs Up", (0,255,0)),
+    '2': ("Victory", (255,0,0)),
+    '3': ("Stop", (0,0,255)),
+    '4': ("Fist", (0,128,255)),
+    '5': ("Ok", (0,255,255)),
+    '6': ("Open Hand", (128,0,128)),
+    '7': ("Pointing", (255,128,0)),
+    '8': ("Rock", (128,255,0))
+}
+
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
+
+    frame = cv2.flip(frame, 1)
+    overlay = frame.copy()  
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    
+    lower_skin = np.array([0, 20, 70], dtype=np.uint8)
+    upper_skin = np.array([20, 255, 255], dtype=np.uint8)
+    mask = cv2.inRange(hsv, lower_skin, upper_skin)
+    mask = cv2.GaussianBlur(mask, (7,7), 0)
+
+    contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    if contours:
+        largest = max(contours, key=cv2.contourArea)
+        if cv2.contourArea(largest) > 2000:
+            
+            cv2.drawContours(overlay, [largest], -1, (144,238,144), 2)  
+            alpha = 0.6  
+            cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
+
+    
+    cv2.putText(frame, gesture, (10,40), cv2.FONT_HERSHEY_SIMPLEX,
+                1, color, 2)
+
+    cv2.imshow("Hand Gesture Recognizer (Mock)", frame)
+
+    key = cv2.waitKey(1) & 0xFF
+    if key == 27:
+        break
+    elif chr(key) in gesture_dict:
+        gesture, color = gesture_dict[chr(key)]
+    elif key == ord('0'):
+        gesture = "No Gesture Detected"
+        color = (0,0,255)
+
+cap.release()
+cv2.destroyAllWindows()

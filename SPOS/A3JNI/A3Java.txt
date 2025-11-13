@@ -1,0 +1,58 @@
+import java.util.Scanner;
+
+public class A3 
+{
+    static 
+    {
+        System.loadLibrary("A3"); // Load the shared library libA3.so
+    }
+
+    private native int add(int a, int b);
+    private native int sub(int a, int b);
+    private native int mul(int a, int b);
+    private native int div(int a, int b);
+
+    public static void main(String[] args) 
+    {
+        Scanner sc = new Scanner(System.in);
+        int a, b, choice;
+
+        System.out.print("Value of a: ");
+        a = sc.nextInt();
+        System.out.print("Value of b: ");
+        b = sc.nextInt();
+
+        A3 obj = new A3();
+
+        while (true) 
+        {
+            System.out.println("\n    MENU    ");
+            System.out.println("1  Addition");
+            System.out.println("2  Subtraction");
+            System.out.println("3  Multiplication");
+            System.out.println("4  Division");
+            System.out.println("5  Exit");
+            System.out.print("Choose an option: ");
+            choice = sc.nextInt();
+
+            switch (choice) 
+            {
+                case 1: System.out.println("Result: " + obj.add(a, b)); break;
+                case 2: System.out.println("Result: " + obj.sub(a, b)); break;
+                case 3: System.out.println("Result: " + obj.mul(a, b)); break;
+                case 4: System.out.println("Result: " + obj.div(a, b)); break;
+                case 5: System.exit(0);
+                default: System.out.println("Invalid option"); break;
+            }
+        }
+    }
+}
+
+
+//javac -h . A3.java
+//readlink -f /usr/bin/javac     it will give output like  /usr/lib/jvm/java-17-openjdk-amd64/bin/javac
+//gcc -shared -fPIC -o libA3.so -I Z/include -I Z/include/linux A3.c    replace Z by path /usr/lib/jvm/java-17-openjdk-amd64
+//java -Djava.library.path=. A3
+
+
+

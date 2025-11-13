@@ -1,0 +1,98 @@
+#include <iostream>
+#include <limits.h>
+#include <iomanip>
+using namespace std;
+
+struct Process 
+{
+    int id, at, bt, pr, ct, tat, wt, rt;
+    bool done;
+} p[20];
+
+int main() 
+{
+    int n;
+    cout << "Enter number of processes: ";
+    cin >> n;
+
+    for (int i = 0; i < n; i++) 
+    {
+        cout << "Arrival, Burst, Priority for P" << i << ": ";
+        cin >> p[i].at >> p[i].bt >> p[i].pr;
+        p[i].id = i;
+        p[i].done = false;
+        p[i].rt = 0; 
+    }
+
+    int time = 0, completed = 0;
+    int gantt[50], ganttTime[50], gIndex = 0;
+
+    while (completed < n) 
+    {
+        int idx = -1, highPr = INT_MAX;
+        for (int i = 0; i < n; i++) 
+        {
+            if (!p[i].done && p[i].at <= time) 
+            {
+                if (p[i].pr < highPr) 
+                {
+                    highPr = p[i].pr;
+                    idx = i;
+                }
+               
+                else if (p[i].pr == highPr && p[i].at < p[idx].at) 
+                    idx = i;
+            }
+        }
+
+        if (idx != -1) 
+        {
+            
+            p[idx].rt = time - p[idx].at;
+
+            
+            gantt[gIndex] = idx;
+            ganttTime[gIndex] = time;
+            gIndex++;
+
+            
+            time += p[idx].bt;
+
+            
+            p[idx].ct = time;
+            p[idx].tat = p[idx].ct - p[idx].at;
+            p[idx].wt = p[idx].tat - p[idx].bt;
+            p[idx].done = true;
+            completed++;
+        } 
+        else time++;
+    }
+
+    
+    cout << "\nP\tAT\tBT\tPR\tCT\tTAT\tWT\tRT\n";
+    double totalTAT = 0, totalWT = 0;
+    for (int i = 0; i < n; i++) 
+    {
+        cout << "P" << i << "\t" << p[i].at << "\t" << p[i].bt << "\t" 
+             << p[i].pr << "\t" << p[i].ct << "\t" << p[i].tat << "\t" 
+             << p[i].wt << "\t" << p[i].rt << "\n";
+        totalTAT += p[i].tat;
+        totalWT += p[i].wt;
+    }
+
+    cout << fixed << setprecision(2);
+    cout << "\nAvg TAT = " << totalTAT / n;
+    cout << "\nAvg WT  = " << totalWT / n << "\n";
+
+    
+    cout << "\nGantt Chart:\n";
+    for (int i = 0; i < gIndex; i++)
+        cout << "|  P" << gantt[i] << "  ";
+    cout << "|\n";
+
+    for (int i = 0; i < gIndex; i++)
+        cout << ganttTime[i] << "\t";
+    cout << time << "\n";
+
+    return 0;
+}

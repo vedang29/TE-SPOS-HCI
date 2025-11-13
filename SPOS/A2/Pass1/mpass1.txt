@@ -1,0 +1,58 @@
+#include <iostream>
+#include <string>
+#include <fstream>
+using namespace std;
+
+int main() 
+{
+    ifstream fin("input.txt");
+    string line, macroName;
+    string ALA[10];
+    string MDT[50];
+    int alaCount = 0;
+    int mdtCount = 0;
+
+    cout << "     PASS 1 OF MACRO PROCESSOR     \n";
+
+    while (getline(fin, line)) 
+    {
+        if (line == "MACRO") 
+        {
+            getline(fin, line);   
+            cout << "\nMacro Name: " << line.substr(0, line.find(" ")) << endl;
+
+            
+            size_t pos = line.find(" ");
+            if (pos != string::npos) 
+            {
+                string params = line.substr(pos + 1);
+                size_t comma;
+                while ((comma = params.find(",")) != string::npos) 
+                {
+                    ALA[alaCount++] = params.substr(1, comma - 1);
+                    params.erase(0, comma + 1);
+                }
+                if (!params.empty())
+                    ALA[alaCount++] = params.substr(1);
+            }
+
+           
+            while (getline(fin, line)) 
+            {
+                MDT[mdtCount++] = line;
+                if (line.find("MEND") != string::npos) break;
+            }
+        }
+    }
+
+    cout << "\nALA (Argument List Array):\n";
+    for (int i = 0; i < alaCount; i++)
+        cout << i + 1 << "\t" << ALA[i] << endl;
+
+    cout << "\nMDT (Macro Definition Table):\n";
+    for (int i = 0; i < mdtCount; i++)
+        cout << i + 1 << "\t" << MDT[i] << endl;
+
+    cout << "\nMNT (Macro Name Table):\n1\tMACRO1\tMDT Index = 1\n";
+    return 0;
+}

@@ -1,0 +1,56 @@
+#include <iostream>
+using namespace std;
+
+struct Process 
+{
+    int id, at, bt, ct, tat, wt, rt;
+} p[20];
+
+int main() 
+{
+    int n;
+    cout << "Enter number of processes: ";
+    cin >> n;
+
+    for (int i = 0; i < n; i++) 
+    {
+        cout << "\nEnter Arrival & Burst time for P" << i << ": ";
+        cin >> p[i].at >> p[i].bt;
+        p[i].id = i;
+    }
+
+    int time = 0;
+    cout << "\nSequence: ";
+    for (int i = 0; i < n; i++) 
+    {
+        if (time < p[i].at) 
+        {
+            while (time < p[i].at) 
+            {
+                cout << " idle ";
+                time++;
+            }
+        }
+        p[i].rt = time - p[i].at;
+        cout << "P" << p[i].id << " ";
+        time += p[i].bt;
+        p[i].ct = time;
+        p[i].tat = p[i].ct - p[i].at;
+        p[i].wt = p[i].tat - p[i].bt;
+    }
+
+    float avgTAT = 0, avgWT = 0;
+    cout << "\n\nP\tAT\tBT\tCT\tTAT\tWT\tRT";
+    for (int i = 0; i < n; i++) 
+    {
+        cout << "\nP" << p[i].id << "\t" << p[i].at << "\t" << p[i].bt
+             << "\t" << p[i].ct << "\t" << p[i].tat << "\t" << p[i].wt
+             << "\t" << p[i].rt;
+        avgTAT += p[i].tat;
+        avgWT += p[i].wt;
+    }
+
+    cout << "\n\nAvg TAT = " << avgTAT / n;
+    cout << "\nAvg WT = " << avgWT / n << endl;
+    return 0;
+}

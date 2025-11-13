@@ -1,0 +1,74 @@
+#include <iostream>
+#include <sstream>
+#include <fstream>
+using namespace std;
+
+struct MNT 
+{ 
+    string name; 
+    int mdtIndex, paramCount; 
+    string params[5]; 
+} mnt[10];
+
+string MDT[50];
+
+int main() 
+{
+    int mntCount = 0, mdtCount = 0;
+    ifstream f1("MNT.txt"), f2("MDT.txt"), f3("intermediate.txt");
+    ofstream fout("output.txt");
+    string line;
+
+
+    while (getline(f1, line)) 
+{
+        if (line.empty()) continue;
+        	stringstream ss(line);
+        ss >> mnt[mntCount].name >> mnt[mntCount].mdtIndex >> mnt[mntCount].paramCount;
+        for (int i = 0; i < mnt[mntCount].paramCount; i++) ss >> mnt[mntCount].params[i];
+        mntCount++;
+    }
+    
+    while (getline(f2, line)) MDT[mdtCount++] = line;
+
+    cout << "     PASS 2 MACRO EXPANSION     \n";
+    while (getline(f3, line)) 
+    {
+        if (line.empty()) 
+	    continue;
+
+        stringstream ss(line);
+        string word; ss >> word;
+        int i;
+        for (i = 0; i < mntCount; i++)
+            if (mnt[i].name == word) break;
+
+        if (i == mntCount) 
+        { 
+            cout << line << "\n"; fout << line << "\n"; 
+            continue; 
+        }
+
+        string args[5], temp;
+        for (int j = 0; j < mnt[i].paramCount; j++) 
+        {    getline(ss, temp, ','); 
+             args[j] = temp.substr(temp.find_first_not_of(" ")); 
+        }
+
+        for (int k = mnt[i].mdtIndex - 1; MDT[k] != "MEND"; k++) 
+        {
+            string exp = MDT[k];
+            for (int j = 0; j < mnt[i].paramCount; j++) 
+            {
+                string formal = "&" + mnt[i].params[j];
+                size_t pos;
+                while ((pos = exp.find(formal)) != string::npos)
+                    exp.replace(pos, formal.length(), args[j]);
+            }
+            cout << exp << "\n"; fout << exp << "\n";
+        }
+    }
+
+    cout << "\nExpansion written to output.txt\n";
+    return 0;
+}

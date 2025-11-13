@@ -1,0 +1,99 @@
+#include <iostream>
+#include <iomanip>
+using namespace std;
+
+struct Process 
+{
+    int id, at, bt, ct, tat, wt, rem, st;
+} p[20];
+
+int main() 
+{
+    int n, t = 0, done = 0;
+    cout << "Enter number of processes: ";
+    cin >> n;
+
+    for (int i = 0; i < n; i++) 
+    {
+        cout << "Arrival & Burst time for P" << i << ": ";
+        cin >> p[i].at >> p[i].bt;
+        p[i].id = i;
+        p[i].rem = p[i].bt;
+        p[i].st = -1;
+    }
+
+    cout << "\nRunning Processes...\n";
+
+    while (done < n) 
+    {
+        int idx = -1, minBurst = 9999;
+
+        for (int i = 0; i < n; i++) 
+        {
+            if (p[i].at <= t && p[i].rem > 0 && p[i].rem < minBurst) 
+            {
+                minBurst = p[i].rem;
+                idx = i;
+            }
+        }
+
+        if (idx != -1) 
+        {
+            if (p[idx].st == -1)
+                p[idx].st = t;
+
+            p[idx].rem--;
+            t++;
+
+            if (p[idx].rem == 0) 
+            {
+                p[idx].ct = t;
+                p[idx].tat = p[idx].ct - p[idx].at;
+                p[idx].wt = p[idx].tat - p[idx].bt;
+                done++;
+            }
+        } 
+        else 
+            t++;
+    }
+
+    double avgTAT = 0, avgWT = 0;
+    cout << "\n\nP\tAT\tBT\tST\tCT\tTAT\tWT";
+    for (int i = 0; i < n; i++) 
+    {
+        cout << "\nP" << p[i].id << "\t" 
+             << p[i].at << "\t" 
+             << p[i].bt << "\t"
+             << p[i].st << "\t"
+             << p[i].ct << "\t" 
+             << p[i].tat << "\t" 
+             << p[i].wt;
+        avgTAT += p[i].tat;
+        avgWT += p[i].wt;
+    }
+
+    cout << "\n\nAverage Turnaround Time: " << fixed << setprecision(2) << avgTAT / n;
+    cout << "\nAverage Waiting Time: " << fixed << setprecision(2) << avgWT / n;
+
+    
+    cout << "\n\nGantt Chart:\n";
+    cout << " ";
+    for (int i = 0; i < n; i++) 
+        cout << "------";
+    cout << "-\n|";
+
+    for (int i = 0; i < n; i++) 
+        cout << "  P" << p[i].id << "  |";
+
+    cout << "\n ";
+    for (int i = 0; i < n; i++) 
+        cout << "------";
+    cout << "-\n";
+
+    cout << setw(2) << p[0].st;
+    for (int i = 0; i < n; i++) 
+        cout << setw(7) << p[i].ct;
+    cout << "\n";
+
+    return 0;
+}

@@ -1,0 +1,123 @@
+#include <iostream>
+using namespace std;
+
+class ProducerConsumer
+{
+    int buffer[5];   
+    int in, out;     
+    int mutex;        
+    int empty;        
+    int full;         
+
+
+    void wait(int &s) 
+    { 
+        s--; 
+    }
+    void signal(int &s) 
+    { 
+        s++; 
+    }
+
+public:
+    ProducerConsumer()
+    {
+        in = out = 0;
+        mutex = 1;  
+        empty = 5;   
+        full = 0;    
+
+        for (int i = 0; i < 5; i++)
+            buffer[i] = 0;
+    }
+
+    void produce()
+    {
+        if (empty != 0)
+        {
+            wait(empty);
+            wait(mutex);
+
+            int item;
+            cout << "Enter item to produce: ";
+            cin >> item;
+
+            buffer[in] = item;
+            in = (in + 1) % 5;
+
+            cout << "Produced item: " << item << endl;
+            displayBuffer();
+
+            signal(mutex);
+            signal(full);
+        }
+        else
+        {
+            cout << "Buffer full! Cannot produce.\n";
+        }
+    }
+
+    void consume()
+    {
+        if (full != 0) 
+        {
+            wait(full);
+            wait(mutex);
+
+            int item = buffer[out];
+            buffer[out] = 0;
+            out = (out + 1) % 5;
+
+            cout << "Consumed item: " << item << endl;
+            displayBuffer();
+
+            signal(mutex);
+            signal(empty);
+        }
+        else
+        {
+            cout << "Buffer empty! Cannot consume.\n";
+        }
+    }
+
+
+    void displayBuffer()
+    {
+        cout << "Current Buffer: ";
+        for (int i = 0; i < 5; i++)
+            cout << buffer[i] << " ";
+        cout << endl;
+    }
+};
+
+
+int main()
+{
+    ProducerConsumer pc;
+    int choice;
+
+    cout << "\n    PRODUCER-CONSUMER PROBLEM USING MUTEX & SEMAPHORE    \n";
+
+    do
+    {
+        cout << "\n1. Produce\n2. Consume\n3. Exit\nEnter your choice: ";
+        cin >> choice;
+
+        switch (choice)
+        {
+            case 1:
+                pc.produce();
+                break;
+            case 2:
+                pc.consume();
+                break;
+            case 3:
+                cout << "Exiting program...\n";
+                break;
+            default:
+                cout << "Invalid choice! Try again.\n";
+        }
+    } while (choice != 3);
+
+    return 0;
+}

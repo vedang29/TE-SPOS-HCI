@@ -1,0 +1,172 @@
+#include <iostream>
+#include <iomanip>
+using namespace std;
+
+void firstFit(int blockSize[], int m, int processSize[], int n)
+{
+    int blocks[20], allocation[20];
+    for (int i = 0; i < m; i++) blocks[i] = blockSize[i];
+    for (int i = 0; i < n; i++) allocation[i] = -1;
+
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < m; j++)
+            if (blocks[j] >= processSize[i])
+            {
+                allocation[i] = j;
+                blocks[j] -= processSize[i];
+                break;
+            }
+
+    cout << "\n----- FIRST FIT MEMORY ALLOCATION -----\n";
+    cout << left << setw(12) << "Process No"
+         << setw(15) << "Process Size"
+         << setw(10) << "Block No" << endl;
+    cout << "---------------------------------------\n";
+
+    for (int i = 0; i < n; i++)
+    {
+        cout << left << setw(12) << i + 1
+             << setw(15) << processSize[i];
+        if (allocation[i] != -1) cout << allocation[i] + 1;
+        else cout << "Not Allocated";
+        cout << endl;
+    }
+}
+
+void bestFit(int blockSize[], int m, int processSize[], int n)
+{
+    int blocks[20], allocation[20];
+    for (int i = 0; i < m; i++) blocks[i] = blockSize[i];
+    for (int i = 0; i < n; i++) allocation[i] = -1;
+
+    for (int i = 0; i < n; i++)
+    {
+        int bestIndex = -1;
+        for (int j = 0; j < m; j++)
+            if (blocks[j] >= processSize[i])
+                if (bestIndex == -1 || blocks[j] < blocks[bestIndex])
+                    bestIndex = j;
+
+        if (bestIndex != -1)
+        {
+            allocation[i] = bestIndex;
+            blocks[bestIndex] -= processSize[i];
+        }
+    }
+
+    cout << "\n----- BEST FIT MEMORY ALLOCATION -----\n";
+    cout << left << setw(12) << "Process No"
+         << setw(15) << "Process Size"
+         << setw(10) << "Block No" << endl;
+    cout << "---------------------------------------\n";
+
+    for (int i = 0; i < n; i++)
+    {
+        cout << left << setw(12) << i + 1
+             << setw(15) << processSize[i];
+        if (allocation[i] != -1) cout << allocation[i] + 1;
+        else cout << "Not Allocated";
+        cout << endl;
+    }
+}
+
+void worstFit(int blockSize[], int m, int processSize[], int n)
+{
+    int blocks[20], allocation[20];
+    for (int i = 0; i < m; i++) blocks[i] = blockSize[i];
+    for (int i = 0; i < n; i++) allocation[i] = -1;
+
+    for (int i = 0; i < n; i++)
+    {
+        int worstIndex = -1;
+        for (int j = 0; j < m; j++)
+        {
+            int rem = blocks[j] - processSize[i];
+            if (rem >= 0 && (worstIndex == -1 || rem > blocks[worstIndex] - processSize[i]))
+                worstIndex = j;
+        }
+        if (worstIndex != -1)
+        {
+            allocation[i] = worstIndex;
+            blocks[worstIndex] -= processSize[i];
+        }
+    }
+
+    cout << "\n----- WORST FIT MEMORY ALLOCATION -----\n";
+    cout << left << setw(12) << "Process No"
+         << setw(15) << "Process Size"
+         << setw(10) << "Block No" << endl;
+    cout << "---------------------------------------\n";
+
+    for (int i = 0; i < n; i++)
+    {
+        cout << left << setw(12) << i + 1
+             << setw(15) << processSize[i];
+        if (allocation[i] != -1) cout << allocation[i] + 1;
+        else cout << "Not Allocated";
+        cout << endl;
+    }
+}
+
+void nextFit(int blockSize[], int m, int processSize[], int n)
+{
+    int blocks[20], allocation[20];
+    for (int i = 0; i < m; i++) blocks[i] = blockSize[i];
+    for (int i = 0; i < n; i++) allocation[i] = -1;
+
+    int lastIndex = 0;
+    for (int i = 0; i < n; i++)
+    {
+        bool placed = false;
+        for (int j = 0, count = 0; count < m; j = (j + 1) % m, count++)
+        {
+            int idx = (lastIndex + j) % m;
+            if (blocks[idx] >= processSize[i])
+            {
+                allocation[i] = idx;
+                blocks[idx] -= processSize[i];
+                lastIndex = idx;
+                placed = true;
+                break;
+            }
+        }
+    }
+
+    cout << "\n----- NEXT FIT MEMORY ALLOCATION -----\n";
+    cout << left << setw(12) << "Process No"
+         << setw(15) << "Process Size"
+         << setw(10) << "Block No" << endl;
+    cout << "---------------------------------------\n";
+
+    for (int i = 0; i < n; i++)
+    {
+        cout << left << setw(12) << i + 1
+             << setw(15) << processSize[i];
+        if (allocation[i] != -1) cout << allocation[i] + 1;
+        else cout << "Not Allocated";
+        cout << endl;
+    }
+}
+
+int main()
+{
+    int m, n;
+    int blockSize[20], processSize[20];
+
+    cout << "Enter number of memory blocks: ";
+    cin >> m;
+    cout << "Enter sizes of " << m << " blocks:\n";
+    for (int i = 0; i < m; i++) cin >> blockSize[i];
+
+    cout << "\nEnter number of processes: ";
+    cin >> n;
+    cout << "Enter sizes of " << n << " processes:\n";
+    for (int i = 0; i < n; i++) cin >> processSize[i];
+
+    firstFit(blockSize, m, processSize, n);
+    bestFit(blockSize, m, processSize, n);
+    worstFit(blockSize, m, processSize, n);
+    nextFit(blockSize, m, processSize, n);
+
+    return 0;
+}

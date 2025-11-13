@@ -1,0 +1,115 @@
+#include <iostream>
+#include <iomanip>
+using namespace std;
+
+int main() 
+{
+    int n, framesCount;
+    cout << "Enter number of pages in reference string: ";
+    cin >> n;
+
+    int ref[n];
+    cout << "Enter reference string: ";
+    for (int i = 0; i < n; i++)
+        cin >> ref[i];
+
+    cout << "Enter number of frames: ";
+    cin >> framesCount;
+
+    int frames[10];
+    for (int i = 0; i < framesCount; i++)
+        frames[i] = -1;
+
+    int hit = 0, miss = 0;
+
+    cout << "\n      Optimal Page Replacement      \n";
+    cout << setw(10) << "Page" << setw(20) << "Frames" << setw(15) << "Result\n";
+    cout << "\n";
+
+    for (int i = 0; i < n; i++) 
+    {
+        bool found = false;
+
+        for (int j = 0; j < framesCount; j++) 
+        {
+            if (frames[j] == ref[i]) 
+            {
+                hit++;
+                found = true;
+                break;
+            }
+        }
+
+        cout << setw(10) << ref[i] << setw(15);
+
+        if (!found) 
+        {
+            miss++;
+
+            int replaceIndex = -1;
+
+            for (int j = 0; j < framesCount; j++) 
+            {
+                if (frames[j] == -1) 
+                {
+                    replaceIndex = j;
+                    break;
+                }
+            }
+
+            if (replaceIndex == -1) 
+            {
+                int farthest = i + 1;
+                int indexToReplace = -1;
+
+                for (int j = 0; j < framesCount; j++) 
+                {
+                    int nextUse = -1;
+                    for (int k = i + 1; k < n; k++) 
+                    {
+                        if (frames[j] == ref[k]) 
+                        {
+                            nextUse = k;
+                            break;
+                        }
+                    }
+                    if (nextUse == -1) 
+                    {
+                        indexToReplace = j; 
+                        break;
+                    }
+                    if (nextUse > farthest) 
+                    {
+                        farthest = nextUse;
+                        indexToReplace = j;
+                    }
+                }
+
+                replaceIndex = indexToReplace;
+            }
+
+            frames[replaceIndex] = ref[i];
+        }
+
+        for (int k = 0; k < framesCount; k++) 
+        {
+            if (frames[k] == -1)
+                cout << "- ";
+            else
+                cout << frames[k] << " ";
+        }
+
+        if (found)
+            cout << setw(15) << "Hit\n";
+        else
+            cout << setw(15) << "Miss\n";
+    }
+
+    cout << "\n";
+    cout << "Total Hits: " << hit << "\n";
+    cout << "Total Misses (Page Faults): " << miss << "\n";
+    cout << "Hit Ratio: " << fixed << setprecision(2) << (float)hit / n << "\n";
+    cout << "Miss Ratio: " << fixed << setprecision(2) << (float)miss / n << "\n";
+
+    return 0;
+}

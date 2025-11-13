@@ -1,0 +1,4 @@
+LOAD &A
+ADD &B
+STORE &A
+MEND

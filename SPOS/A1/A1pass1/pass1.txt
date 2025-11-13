@@ -1,0 +1,152 @@
+#include <iostream>
+#include <fstream>
+#include <cstring>
+#include <map>
+using namespace std;
+
+struct Symbol 
+{
+    char name[20];
+    int addr;
+};
+
+int main() 
+{
+    ifstream fin("input.txt");
+    if(!fin) 
+    {
+        cout << "File not found!\n";
+        return 0;
+    }
+
+    Symbol sym[50];
+    int symCount = 0;
+    int LC = 0;
+
+    
+    map<string,string> IS = { {"STOP","00"}, {"ADD","01"}, {"SUB","02"}, {"MULT","03"},
+                              {"MOVER","04"}, {"MOVEM","05"}, {"COMP","06"}, {"BC","07"},
+                              {"DIV","08"}, {"READ","09"}, {"PRINT","10"} };
+    map<string,string> DL = { {"DC","01"}, {"DS","02"} };
+    map<string,string> AD = { {"START","01"}, {"END","02"}, {"ORIGIN","03"}, {"EQU","04"}, {"LTORG","05"} };
+    map<string,string> REG = { {"AREG","1"}, {"BREG","2"}, {"CREG","3"}, {"DREG","4"} };
+
+    char part1[20], part2[20], part3[20], part4[20];
+
+    cout << "      PASS 1 OF ASSEMBLER      \n";
+    cout << "Intermediate Code:\n";
+
+    while(!fin.eof()) 
+    {
+        string line;
+        getline(fin, line);
+        if(line.empty()) continue;
+
+        strcpy(part1,""); strcpy(part2,""); strcpy(part3,""); strcpy(part4,"");
+        sscanf(line.c_str(), "%s %s %s %s", part1, part2, part3, part4);
+
+        if(strcmp(part1,"START")==0) 
+	{
+            LC = atoi(part2);
+            cout << "(AD,01) (C," << LC << ")\n";
+            continue;
+        }
+
+
+        if(strcmp(part1,"END")==0) 
+	{
+            cout << "(AD,02)\n";
+            break;
+        }
+
+       
+        bool isLabel = (IS.find(part1) == IS.end() && DL.find(part1) == DL.end() && AD.find(part1) == AD.end());
+
+        char opcode[20], operand1[20], operand2[20];
+        if(isLabel) 
+	{
+           
+            bool found = false;
+            for(int i=0;i<symCount;i++) 
+	    {
+                if(strcmp(sym[i].name,part1)==0) 
+		{
+                    sym[i].addr = LC;
+                    found = true;
+                    break;
+                }
+            }
+            if(!found) 
+	    {
+                strcpy(sym[symCount].name, part1);
+                sym[symCount++].addr = LC;
+            }
+            strcpy(opcode, part2);
+            strcpy(operand1, part3);
+            strcpy(operand2, part4);
+        } 
+	else 
+	{
+            strcpy(opcode, part1);
+            strcpy(operand1, part2);
+            strcpy(operand2, part3);
+        }
+
+        
+        if(DL.find(opcode)!=DL.end()) 
+	{
+            cout << LC << " (DL," << DL[opcode] << ") (C," << operand1 << ")\n";
+            LC += (strcmp(opcode,"DS")==0 ? atoi(operand1) : 1);
+            continue;
+        }
+
+       
+        if(IS.find(opcode)!=IS.end()) 
+	{
+            cout << LC << " (IS," << IS[opcode] << ")";
+            if(strlen(operand1)!=0) 
+	    {
+                if(REG.find(operand1)!=REG.end())
+                    cout << " (" << REG[operand1] << ")";
+                else
+                    cout << " (S," << operand1 << ")";
+            }
+            if(strlen(operand2)!=0) 
+	    {
+               
+                bool found = false;
+                for(int i=0;i<symCount;i++)
+                    if(strcmp(sym[i].name,operand2)==0) 
+		    { 
+			found=true; 
+			break; 
+		    }
+                if(!found && strlen(operand2)!=0) 
+		{
+                    strcpy(sym[symCount].name, operand2);
+                    sym[symCount++].addr = -1;
+                }
+                cout << " (S," << operand2 << ")";
+            }
+            cout << "\n";
+            LC++;
+            continue;
+        }
+
+       
+        if(AD.find(opcode)!=AD.end()) 
+	{
+            cout << "(AD," << AD[opcode] << ")\n";
+            continue;
+        }
+    }
+
+   
+    cout << "\nSymbol Table:\n";
+    cout << "Name\tAddress\n";
+    for(int i=0;i<symCount;i++)
+        cout << sym[i].name << "\t" << sym[i].addr << "\n";
+
+    fin.close();
+    return 0;
+}

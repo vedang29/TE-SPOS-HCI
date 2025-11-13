@@ -1,0 +1,112 @@
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <cstring>
+using namespace std;
+
+struct Symbol 
+{
+    char name[10];
+    int addr;
+};
+
+int main() 
+{
+    ifstream symtab("symtab.txt");
+    ifstream ic("intermediate.txt");
+    if (!symtab || !ic) 
+    {
+        cout << "Error: required files not found!\n";
+        return 0;
+    }
+
+    Symbol sym[20];
+    int symCount = 0;
+
+
+    while (!symtab.eof()) 
+    {
+        string name;
+        int addr;
+        symtab >> name >> addr;
+
+        if (name.empty()) 
+	    continue;
+
+        strcpy(sym[symCount].name, name.c_str());
+        sym[symCount].addr = addr;
+        symCount++;
+    }
+    symtab.close();
+
+    cout << "      PASS 2 OF ASSEMBLER      \n";
+    cout << "Machine Code:\n";
+
+    string line;
+
+    while (getline(ic, line)) 
+    {
+        if (line.empty())
+            continue;
+
+        if (line.find("(AD") != string::npos) 
+	    continue; 
+
+        if (line.find("(DL") != string::npos) 
+	    continue; 
+
+        stringstream ss(line);
+        int LC;
+        string temp;
+        ss >> LC;
+
+        string opcodePart;
+        ss >> opcodePart;
+
+        if (opcodePart.find("(IS") == string::npos)
+            continue;
+
+        string regPart, symPart;
+        ss >> regPart >> symPart;
+
+        int opcode = 0;
+        if (opcodePart.find("01") != string::npos) 
+	    opcode = 1;
+
+        else if (opcodePart.find("04") != string::npos) 
+	    opcode = 4;
+        
+	else if (opcodePart.find("05") != string::npos) 
+	    opcode = 5;
+
+        int reg = 0;
+        if (regPart.find("1") != string::npos) 
+	    reg = 1;
+
+        else if (regPart.find("2") != string::npos) 
+	    reg = 2;
+
+
+        string symName;
+
+        size_t p = symPart.find(",");
+        if (p != string::npos) 
+	{
+            symName = symPart.substr(p + 1);
+            symName.pop_back(); 
+        }
+
+        int symAddr = 0;
+        for (int i = 0; i < symCount; i++) 
+	{
+            if (strcmp(sym[i].name, symName.c_str()) == 0)
+                symAddr = sym[i].addr;
+        }
+
+        cout << LC << " + " << opcode << " " << reg << " " << symAddr << endl;
+    }
+
+    ic.close();
+    return 0;
+}

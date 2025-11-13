@@ -1,0 +1,60 @@
+import cv2
+import numpy as np
+
+
+cap = cv2.VideoCapture(0)
+cap.set(3, 640)
+cap.set(4, 480)
+
+if not cap.isOpened():
+    print("Cannot open camera")
+    exit()
+
+emotion = "No Emotion Detected"
+color = (0,0,255)
+
+
+emotion_dict = {
+    '1': ("Happy", (0,255,0)),
+    '2': ("Sad", (255,0,0)),
+    '3': ("Angry", (0,0,255)),
+    '4': ("Surprised", (0,128,255)),
+    '5': ("Neutral", (128,0,128)),
+    '6': ("Fear", (255,128,0)),
+    '7': ("Disgust", (128,255,0)),
+    '8': ("Confused", (0,255,255))
+}
+
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
+
+    frame = cv2.flip(frame,1)
+    overlay = frame.copy()
+
+    
+    h, w, _ = frame.shape
+    top_left = (w//3, h//4)
+    bottom_right = (2*w//3, 3*h//4)
+    cv2.rectangle(overlay, top_left, bottom_right, (144,238,144), 2)
+    alpha = 0.5
+    cv2.addWeighted(overlay, alpha, frame, 1-alpha, 0, frame)
+
+    
+    cv2.putText(frame, emotion, (10,40), cv2.FONT_HERSHEY_SIMPLEX,
+                1, color, 2)
+
+    cv2.imshow("Emotion Recognizer (Mock)", frame)
+
+    key = cv2.waitKey(1) & 0xFF
+    if key == 27:  
+        break
+    elif chr(key) in emotion_dict:
+        emotion, color = emotion_dict[chr(key)]
+    elif key == ord('0'):
+        emotion = "No Emotion Detected"
+        color = (0,0,255)
+
+cap.release()
+cv2.destroyAllWindows()
