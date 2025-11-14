@@ -55,7 +55,7 @@ class GestureApp:
 
         for g in gestures:
             if g.replace(" ", "") in filename.replace(" ", ""):
-                detected_gesture = g.title()x
+                detected_gesture = g.title()
                 if "thumbs" in g or "ok" in g:
                     color = "green"
                 elif "stop" in g or "fist" in g:
